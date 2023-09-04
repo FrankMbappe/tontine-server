@@ -1,0 +1,5 @@
+{
+  "name": "Tontine-Server",
+  "DATABASE_URL": "",
+  "JWT_PRIVATE_KEY": ""
+}
