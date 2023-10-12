@@ -1,17 +1,23 @@
 type User = {
   id: string;
   phoneNumber: string;
-  isPhoneNumberVerified: boolean;
+  phoneNumberVerified?: Date;
   email: string;
-  isEmailVerified: boolean;
+  emailVerified?: Date;
+  picUrl?: string;
   tontines: Tontine[];
 };
 
-type Tontine = {
-  manager: User;
+type Model = {
+  id: string;
   createdAt: Date;
+  updatedAt: Date;
+};
+
+type Tontine = Model & {
   name: string;
   description?: string;
+  manager: User;
   picUrl?: string;
   members: Member[];
   schedulingType: SchedulingType;
@@ -34,7 +40,6 @@ type Member = {
   picUrl?: string;
   role: MemberRole;
   user?: User;
-  gainMeetings: Meeting[];
 };
 
 type MemberRole = "contributor" | "manager" | "assistantManager";

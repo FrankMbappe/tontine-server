@@ -10,10 +10,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Example {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// User & Auth
+model User {
+  id                  String         @id @default(cuid())
+  phoneNumber         String?        @unique
+  phoneNumberVerified DateTime?
+  email               String?        @unique
+  emailVerified       DateTime?
+  picUrl              String?
+  tontines            Tontine[]
+  sessions            Session[]
+  refreshToken        RefreshToken[]
+  account             Account[]
+  memberships         Membership[]
 }
 
 model Account {
@@ -35,27 +44,12 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String?        @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  refreshToken  RefreshToken[]
-}
-
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-enum AccountType {
-  PhoneNumber
 }
 
 model RefreshToken {
@@ -66,4 +60,100 @@ model RefreshToken {
   revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// App
+model Tontine {
+  id                 String         @id @default(cuid())
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  managerId          String
+  name               String
+  description        String?
+  picUrl             String?
+  manager            User           @relation(fields: [managerId], references: [id])
+  memberships        Membership[]
+  schedulingType     SchedulingType
+  contributionAmount Decimal        @db.Money
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tontine   Tontine  @relation(fields: [tontineId], references: [id])
+  tontineId String
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  member    Member?
+}
+
+model Member {
+  id                      String          @id @default(cuid())
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  membershipId            String          @unique
+  membership              Membership      @relation(fields: [membershipId], references: [id])
+  phoneNumber             String
+  email                   String?
+  picUrl                  String?
+  situation               MemberSituation
+  role                    MemberRole
+  meetingsAsHost          Meeting[]       @relation("MeetingsAsHost")
+  meetingsAsParticipant   Meeting[]       @relation("MeetingsAsParticipant")
+  meetingsAsEarner        Meeting[]       @relation("MeetingsAsEarner")
+  transactionsAsAuthor    Transaction[]   @relation("TransactionsAsAuthor")
+  transactionsAsRecipient Transaction[]   @relation("TransactionsAsRecipient")
+}
+
+model Meeting {
+  id                 String        @id @default(cuid())
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  startsAt           DateTime
+  host               Member        @relation("MeetingsAsHost", fields: [hostId], references: [id])
+  hostId             String
+  title              String?
+  description        String?
+  location           String?
+  participants       Member[]      @relation("MeetingsAsParticipant")
+  expectedEarnings   Decimal       @db.Money
+  actualEarnings     Decimal       @db.Money
+  contributionAmount Decimal       @db.Money
+  transactions       Transaction[]
+  earnerId           String
+  earner             Member        @relation("MeetingsAsEarner", fields: [earnerId], references: [id])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  meeting     Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId   String
+  author      Member   @relation("TransactionsAsAuthor", fields: [authorId], references: [id])
+  authorId    String
+  recipient   Member   @relation("TransactionsAsRecipient", fields: [recipientId], references: [id])
+  recipientId String
+  completedAt DateTime
+  amount      Decimal  @db.Money
+}
+
+// Enums
+enum SchedulingType {
+  FirstSundayOfTheMonth
+  FirstSaturdayOfTheMonth
+  Custom
+}
+
+enum MemberSituation {
+  Active
+  Suspended
+  Left
+}
+
+enum MemberRole {
+  Contributor
+  Manager
+  AssistantManager
 }
