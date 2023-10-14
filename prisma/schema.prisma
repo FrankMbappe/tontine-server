@@ -12,72 +12,43 @@ datasource db {
 
 // User & Auth
 model User {
-  id                  String         @id @default(cuid())
-  phoneNumber         String?        @unique
+  id                  String              @id @default(cuid())
+  phoneNumber         String?             @unique
   phoneNumberVerified DateTime?
-  email               String?        @unique
+  email               String?             @unique
   emailVerified       DateTime?
   picUrl              String?
-  tontines            Tontine[]
-  sessions            Session[]
-  refreshToken        RefreshToken[]
-  account             Account[]
-  memberships         Membership[]
-}
-
-model Account {
-  id            String  @id @default(cuid())
-  userId        String
-  type          String
-  refresh_token String? @db.Text
-  access_token  String? @db.Text
-  expires_at    Int?
-  token_type    String?
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+  refreshTokens       RefreshToken[]
+  tontinesAsManager   Tontine[]
+  tontineMemberships  TontineMembership[]
 }
 
 model RefreshToken {
   id          String   @id @unique @default(uuid())
-  hashedToken String
-  userId      String
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  hashedToken String
+  revoked     Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // App
 model Tontine {
-  id                 String         @id @default(cuid())
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  id                 String              @id @default(cuid())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   managerId          String
   name               String
   description        String?
   picUrl             String?
-  manager            User           @relation(fields: [managerId], references: [id])
-  memberships        Membership[]
+  manager            User                @relation(fields: [managerId], references: [id])
+  memberships        TontineMembership[]
   schedulingType     SchedulingType
-  contributionAmount Decimal        @db.Money
+  contributionAmount Decimal             @db.Money
 }
 
-model Membership {
+model TontineMembership {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -89,21 +60,21 @@ model Membership {
 }
 
 model Member {
-  id                      String          @id @default(cuid())
-  createdAt               DateTime        @default(now())
-  updatedAt               DateTime        @updatedAt
-  membershipId            String          @unique
-  membership              Membership      @relation(fields: [membershipId], references: [id])
+  id                      String            @id @default(cuid())
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  membershipId            String            @unique
+  membership              TontineMembership @relation(fields: [membershipId], references: [id])
   phoneNumber             String
   email                   String?
   picUrl                  String?
   situation               MemberSituation
   role                    MemberRole
-  meetingsAsHost          Meeting[]       @relation("MeetingsAsHost")
-  meetingsAsParticipant   Meeting[]       @relation("MeetingsAsParticipant")
-  meetingsAsEarner        Meeting[]       @relation("MeetingsAsEarner")
-  transactionsAsAuthor    Transaction[]   @relation("TransactionsAsAuthor")
-  transactionsAsRecipient Transaction[]   @relation("TransactionsAsRecipient")
+  meetingsAsHost          Meeting[]         @relation("MeetingsAsHost")
+  meetingsAsParticipant   Meeting[]         @relation("MeetingsAsParticipant")
+  meetingsAsEarner        Meeting[]         @relation("MeetingsAsEarner")
+  transactionsAsAuthor    Transaction[]     @relation("TransactionsAsAuthor")
+  transactionsAsRecipient Transaction[]     @relation("TransactionsAsRecipient")
 }
 
 model Meeting {
