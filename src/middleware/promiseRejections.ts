@@ -1,6 +1,6 @@
-import winston from "winston";
-import { ErrorRequestHandler } from "express";
+import type { ErrorRequestHandler } from "express";
 import { ReasonPhrases, StatusCodes, getStatusCode } from "http-status-codes";
+import winston from "winston";
 
 /**
  * Handle promise rejections from all routes

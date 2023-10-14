@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 type AsyncHandler = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => Promise<unknown>;
 
 export default function handleAsync(handler: AsyncHandler): AsyncHandler {

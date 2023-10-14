@@ -7,15 +7,15 @@ const setupLogger = () => {
       all: true,
     }),
     winston.format.label({
-      label: "[LOGGER]",
+      label: "🤖",
     }),
     winston.format.timestamp({
-      format: "dd/mm/yyyy HH:MM:SS",
+      format: "DD/MM/YYYY HH:mm:ss",
     }),
     winston.format.printf(
       (info) =>
-        ` ${info.label}  ${info.timestamp}  ${info.level} : ${info.message}`
-    )
+        `${info.label} ${info.timestamp} | ${info.level} : ${info.message}`,
+    ),
   );
 
   // Errors outside express.js scope
@@ -26,7 +26,7 @@ const setupLogger = () => {
     }),
     new winston.transports.Console({
       format: winston.format.combine(winston.format.colorize(), winstonFormat),
-    })
+    }),
   );
 
   // Errors within express.js scope
@@ -34,7 +34,7 @@ const setupLogger = () => {
   winston.add(
     new winston.transports.Console({
       format: winston.format.combine(winston.format.colorize(), winstonFormat),
-    })
+    }),
   ); // Show logs to console
 };
 
